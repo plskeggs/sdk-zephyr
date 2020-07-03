@@ -15,6 +15,7 @@
 #include <sys/util.h>
 #include <kernel.h>
 #include <logging/log.h>
+#include <logging/log_ctrl.h>
 LOG_MODULE_REGISTER(uart_nrfx_uarte, LOG_LEVEL_ERR);
 
 /* Generalize PPI or DPPI channel management */
@@ -1021,7 +1022,7 @@ static void uarte_nrfx_poll_out(struct device *dev, unsigned char c)
 		lock = &data->poll_out_lock;
 
 	if (!k_is_in_isr()) {
-		u8_t safety_cnt = 100;
+		u16_t safety_cnt = 10000;
 
 		while (atomic_cas((atomic_t *) lock,
 				(atomic_val_t) 0,
@@ -1031,6 +1032,7 @@ static void uarte_nrfx_poll_out(struct device *dev, unsigned char c)
 			 */
 			k_msleep(1);
 			if (--safety_cnt == 0) {
+				LOG_ERR("Timeout waiting for lock");
 				return;
 			}
 		}
@@ -1046,11 +1048,13 @@ static void uarte_nrfx_poll_out(struct device *dev, unsigned char c)
 	nrf_uarte_task_trigger(uarte, NRF_UARTE_TASK_STARTTX);
 
 	/* Wait for transmitter to be ready */
-	int res;
+	int res = 0;
 
 	NRFX_WAIT_FOR(nrf_uarte_event_check(uarte, NRF_UARTE_EVENT_ENDTX),
-		      1000, 1, res);
-
+		      UINT_MAX, 1, res);
+	if (!res) {
+		LOG_ERR("Timeout waiting for ENDTX");
+	}
 	/* Deactivate the transmitter so that it does not needlessly
 	 * consume power.
 	 */
@@ -1059,6 +1063,7 @@ static void uarte_nrfx_poll_out(struct device *dev, unsigned char c)
 	/* Release the lock. */
 	*lock = 0;
 }
+
 #ifdef UARTE_INTERRUPT_DRIVEN
 /** Interrupt driven FIFO fill function */
 static int uarte_nrfx_fifo_fill(struct device *dev,
