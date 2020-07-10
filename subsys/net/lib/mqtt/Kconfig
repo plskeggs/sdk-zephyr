@@ -35,4 +35,11 @@ config MQTT_LIB_WEBSOCKET
 	help
 	  Enable Websocket support for socket MQTT Library.
 
+config TLS_SOCKET_WRITE_LIMIT
+	int "Maximum block size that can be successfully sent over TLS"
+       default 2048
+       help
+         Limit each attempted TLS socket write to this number of bytes.
+         Larger writes will be split into multiple writes up to this size.
+
 endif # MQTT_LIB

@@ -112,11 +112,14 @@ int mqtt_client_tls_write(struct mqtt_client *client, const u8_t *data,
 			  u32_t datalen)
 {
 	u32_t offset = 0U;
+	u32_t sendlen;
 	int ret;
 
 	while (offset < datalen) {
+		sendlen = MIN((datalen - offset),
+			      CONFIG_TLS_SOCKET_WRITE_LIMIT);
 		ret = send(client->transport.tls.sock, data + offset,
-			   datalen - offset, 0);
+			   sendlen, 0);
 		if (ret < 0) {
 			return -errno;
 		}
