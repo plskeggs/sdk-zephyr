@@ -114,12 +114,23 @@ int mqtt_client_tls_write(struct mqtt_client *client, const u8_t *data,
 	u32_t offset = 0U;
 	u32_t sendlen;
 	int ret;
+	bool print = false;
 
+	if (datalen > CONFIG_TLS_SOCKET_WRITE_LIMIT) {
+		LOG_INF("Write %u", datalen);
+		print = true;
+	}
 	while (offset < datalen) {
 		sendlen = MIN((datalen - offset),
 			      CONFIG_TLS_SOCKET_WRITE_LIMIT);
+		if (print) {
+			LOG_INF("Chunk len %u", sendlen);
+		}
 		ret = send(client->transport.tls.sock, data + offset,
 			   sendlen, 0);
+		if (print) {
+			LOG_INF("ret %d", ret);
+		}
 		if (ret < 0) {
 			return -errno;
 		}
