@@ -51,7 +51,7 @@ static void shell_internal_help_print(const struct shell *shell)
 
 	z_shell_help_cmd_print(shell, &shell->ctx->active_cmd);
 	z_shell_help_subcmd_print(shell, &shell->ctx->active_cmd,
-				  "Subcommands:\n");
+				"Subcommands:\n");
 }
 
 /**
@@ -69,8 +69,8 @@ static int cmd_precheck(const struct shell *shell,
 {
 	if (!arg_cnt_ok) {
 		z_shell_fprintf(shell, SHELL_ERROR,
-				"%s: wrong parameter count\n",
-				shell->ctx->active_cmd.syntax);
+				       "%s: wrong parameter count\n",
+				       shell->ctx->active_cmd.syntax);
 
 		if (IS_ENABLED(CONFIG_SHELL_HELP_ON_WRONG_ARGUMENT_COUNT)) {
 			shell_internal_help_print(shell);
@@ -90,7 +90,7 @@ static inline void state_set(const struct shell *shell, enum shell_state state)
 		cmd_buffer_clear(shell);
 		if (z_flag_print_noinit_get(shell)) {
 			z_shell_fprintf(shell, SHELL_WARNING, "%s",
-					SHELL_MSG_BACKEND_NOT_ACTIVE);
+					       SHELL_MSG_BACKEND_NOT_ACTIVE);
 			z_flag_print_noinit_set(shell, false);
 		}
 		z_shell_print_prompt_and_cmd(shell);
@@ -212,7 +212,7 @@ static void history_handle(const struct shell *shell, bool up)
 
 	/* Start by checking if history is not empty. */
 	history_mode = z_shell_history_get(shell->history, up,
-					   shell->ctx->cmd_buff, &len);
+					 shell->ctx->cmd_buff, &len);
 
 	/* On exiting history mode print backed up command. */
 	if (!history_mode) {
@@ -256,7 +256,7 @@ static bool tab_prepare(const struct shell *shell,
 
 	/* Create argument list. */
 	(void)z_shell_make_argv(argc, *argv, shell->ctx->temp_buff,
-				CONFIG_SHELL_ARGC_MAX);
+			      CONFIG_SHELL_ARGC_MAX);
 
 	if (*argc > CONFIG_SHELL_ARGC_MAX) {
 		return false;
@@ -367,8 +367,8 @@ static void autocomplete(const struct shell *shell,
 	/* no exact match found */
 	if (cmd_len != arg_len) {
 		z_shell_op_completion_insert(shell,
-					     match->syntax + arg_len,
-					     cmd_len - arg_len);
+					   match->syntax + arg_len,
+					   cmd_len - arg_len);
 	}
 
 	/* Next character in the buffer is not 'space'. */
@@ -495,7 +495,7 @@ static void partial_autocomplete(const struct shell *shell,
 
 	if (common) {
 		z_shell_op_completion_insert(shell, &completion[arg_len],
-					     common - arg_len);
+					   common - arg_len);
 	}
 }
 
@@ -516,7 +516,7 @@ static int exec_cmd(const struct shell *shell, size_t argc, const char **argv,
 			return SHELL_CMD_HELP_PRINTED;
 		} else {
 			z_shell_fprintf(shell, SHELL_ERROR,
-					SHELL_MSG_SPECIFY_SUBCOMMAND);
+					       SHELL_MSG_SPECIFY_SUBCOMMAND);
 			return -ENOEXEC;
 		}
 	}
@@ -626,8 +626,8 @@ static int execute(const struct shell *shell)
 
 	if (IS_ENABLED(CONFIG_SHELL_HISTORY)) {
 		z_shell_cmd_trim(shell);
-		history_put(shell, shell->ctx->cmd_buff,
-			    shell->ctx->cmd_buff_len);
+	history_put(shell, shell->ctx->cmd_buff,
+		    shell->ctx->cmd_buff_len);
 	}
 
 	if (IS_ENABLED(CONFIG_SHELL_WILDCARD)) {
@@ -674,7 +674,7 @@ static int execute(const struct shell *shell)
 			}
 
 			z_shell_fprintf(shell, SHELL_ERROR,
-					SHELL_MSG_SPECIFY_SUBCOMMAND);
+					       SHELL_MSG_SPECIFY_SUBCOMMAND);
 			return -ENOEXEC;
 		}
 
@@ -682,7 +682,7 @@ static int execute(const struct shell *shell)
 			enum shell_wildcard_status status;
 
 			status = z_shell_wildcard_process(shell, entry,
-							  argvp[0]);
+							argvp[0]);
 			/* Wildcard character found but there is no matching
 			 * command.
 			 */
@@ -721,8 +721,8 @@ static int execute(const struct shell *shell)
 				(!z_shell_in_select_mode(shell) ||
 				 shell->ctx->selected_cmd->handler == NULL)) {
 				z_shell_fprintf(shell, SHELL_ERROR,
-						"%s%s\n", argv[0],
-						SHELL_MSG_CMD_NOT_FOUND);
+						       "%s%s\n", argv[0],
+						       SHELL_MSG_CMD_NOT_FOUND);
 			}
 
 			/* last handler found - no need to search commands in
@@ -755,8 +755,8 @@ static int execute(const struct shell *shell)
 		 */
 		(void)z_shell_make_argv(&cmd_lvl,
 					&argv[selected_cmd_get(shell) ? 1 : 0],
-					shell->ctx->cmd_buff,
-					CONFIG_SHELL_ARGC_MAX);
+				      shell->ctx->cmd_buff,
+				      CONFIG_SHELL_ARGC_MAX);
 
 		if (selected_cmd_get(shell)) {
 			/* Apart from what is in the command buffer, there is
@@ -1163,6 +1163,7 @@ static int instance_init(const struct shell *shell, const void *p_config,
 
 	z_flag_tx_rdy_set(shell, true);
 	z_flag_echo_set(shell, IS_ENABLED(CONFIG_SHELL_ECHO_STATUS));
+	flag_obscure_set(shell, true);
 	z_flag_mode_delete_set(shell,
 			     IS_ENABLED(CONFIG_SHELL_BACKSPACE_MODE_DELETE));
 	shell->ctx->vt100_ctx.cons.terminal_wid =
@@ -1248,7 +1249,7 @@ void shell_thread(void *shell_handle, void *arg_log_backend,
 
 	if (log_backend && IS_ENABLED(CONFIG_SHELL_LOG_BACKEND)) {
 		z_shell_log_backend_enable(shell->log_backend, (void *)shell,
-					   log_level);
+					 log_level);
 	}
 
 	/* Enable shell and print prompt. */
@@ -1265,7 +1266,7 @@ void shell_thread(void *shell_handle, void *arg_log_backend,
 		if (err != 0) {
 			k_mutex_lock(&shell->ctx->wr_mtx, K_FOREVER);
 			z_shell_fprintf(shell, SHELL_ERROR,
-					"Shell thread error: %d", err);
+					       "Shell thread error: %d", err);
 			k_mutex_unlock(&shell->ctx->wr_mtx);
 			return;
 		}

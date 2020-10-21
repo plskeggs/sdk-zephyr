@@ -603,6 +603,7 @@ struct shell_flags {
 	uint32_t insert_mode :1; /*!< Controls insert mode for text introduction.*/
 	uint32_t use_colors  :1; /*!< Controls colored syntax.*/
 	uint32_t echo        :1; /*!< Controls shell echo.*/
+	uint32_t obscure     :1; /*!< If echo on, print asterisk instead */
 	uint32_t processing  :1; /*!< Shell is executing process function.*/
 	uint32_t tx_rdy      :1;
 	uint32_t mode_delete :1; /*!< Operation mode of backspace key */
@@ -989,6 +990,18 @@ int shell_execute_cmd(const struct shell *shell, const char *cmd);
  * @retval -EINVAL if invalid root command is provided.
  */
 int shell_set_root_cmd(const char *cmd);
+
+/** @brief Set unfiltered argument number.
+ *
+ *  If set to a value less than CONFIG_SHELL_ARGC_MAX, when reached by a
+ *  given shell command, all characters until the final `\0' are passed
+ *  to this argument number unmodified.
+ *
+ *  @param arg Argument number which gets all remaining characters on the line.
+ *
+ *  @returns previous value.
+ */
+uint8_t shell_set_unfiltered_argument(uint8_t arg);
 
 /**
  * @}

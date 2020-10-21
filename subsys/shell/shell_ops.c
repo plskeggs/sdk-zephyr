@@ -11,8 +11,8 @@ void z_shell_op_cursor_vert_move(const struct shell *shell, int32_t delta)
 {
 	if (delta != 0) {
 		z_shell_raw_fprintf(shell->fprintf_ctx, "\033[%d%c",
-				    delta > 0 ? delta : -delta,
-				    delta > 0 ? 'A' : 'B');
+				  delta > 0 ? delta : -delta,
+				  delta > 0 ? 'A' : 'B');
 	}
 }
 
@@ -20,8 +20,8 @@ void z_shell_op_cursor_horiz_move(const struct shell *shell, int32_t delta)
 {
 	if (delta != 0) {
 		z_shell_raw_fprintf(shell->fprintf_ctx, "\033[%d%c",
-				    delta > 0 ? delta : -delta,
-				    delta > 0 ? 'C' : 'D');
+				  delta > 0 ? delta : -delta,
+				  delta > 0 ? 'C' : 'D');
 	}
 }
 
@@ -54,7 +54,7 @@ void z_shell_op_cursor_position_synchronize(const struct shell *shell)
 	bool last_line;
 
 	z_shell_multiline_data_calc(cons, shell->ctx->cmd_buff_pos,
-				    shell->ctx->cmd_buff_len);
+				  shell->ctx->cmd_buff_len);
 	last_line = (cons->cur_y == cons->cur_y_end);
 
 	/* In case cursor reaches the bottom line of a terminal, it will
@@ -82,17 +82,17 @@ void z_shell_op_cursor_move(const struct shell *shell, int16_t val)
 	int32_t col_span;
 
 	z_shell_multiline_data_calc(cons, shell->ctx->cmd_buff_pos,
-				    shell->ctx->cmd_buff_len);
+				  shell->ctx->cmd_buff_len);
 
 	/* Calculate the new cursor. */
 	row_span = z_row_span_with_buffer_offsets_get(
 						&shell->ctx->vt100_ctx.cons,
-						shell->ctx->cmd_buff_pos,
-						new_pos);
+						    shell->ctx->cmd_buff_pos,
+						    new_pos);
 	col_span = z_column_span_with_buffer_offsets_get(
-						&shell->ctx->vt100_ctx.cons,
-						shell->ctx->cmd_buff_pos,
-						new_pos);
+						    &shell->ctx->vt100_ctx.cons,
+						    shell->ctx->cmd_buff_pos,
+						    new_pos);
 
 	z_shell_op_cursor_vert_move(shell, -row_span);
 	z_shell_op_cursor_horiz_move(shell, col_span);
@@ -223,8 +223,15 @@ static void reprint_from_cursor(const struct shell *shell, uint16_t diff,
 		z_clear_eos(shell);
 	}
 
-	z_shell_fprintf(shell, SHELL_NORMAL, "%s",
-		      &shell->ctx->cmd_buff[shell->ctx->cmd_buff_pos]);
+	if (flag_obscure_get(shell)) {
+		int len = strlen(&shell->ctx->cmd_buff[shell->ctx->cmd_buff_pos]);
+		while (len--) {
+			shell_raw_fprintf(shell->fprintf_ctx, "*");
+		}
+	} else {
+		z_shell_fprintf(shell, SHELL_NORMAL, "%s",
+			      &shell->ctx->cmd_buff[shell->ctx->cmd_buff_pos]);
+	}
 	shell->ctx->cmd_buff_pos = shell->ctx->cmd_buff_len;
 
 	if (full_line_cmd(shell)) {
@@ -264,6 +271,9 @@ static void char_replace(const struct shell *shell, char data)
 
 	if (!z_flag_echo_get(shell)) {
 		return;
+	}
+	if (flag_obscure_get(shell)) {
+		data = '*';
 	}
 
 	z_shell_raw_fprintf(shell->fprintf_ctx, "%c", data);
@@ -316,8 +326,8 @@ void z_shell_op_delete_from_cursor(const struct shell *shell)
 }
 
 void z_shell_op_completion_insert(const struct shell *shell,
-				  const char *compl,
-				  uint16_t compl_len)
+				const char *compl,
+				uint16_t compl_len)
 {
 	data_insert(shell, compl, compl_len);
 }
@@ -325,8 +335,8 @@ void z_shell_op_completion_insert(const struct shell *shell,
 void z_shell_cmd_line_erase(const struct shell *shell)
 {
 	z_shell_multiline_data_calc(&shell->ctx->vt100_ctx.cons,
-				    shell->ctx->cmd_buff_pos,
-				    shell->ctx->cmd_buff_len);
+				  shell->ctx->cmd_buff_pos,
+				  shell->ctx->cmd_buff_len);
 	z_shell_op_cursor_horiz_move(shell,
 				   -(shell->ctx->vt100_ctx.cons.cur_x - 1));
 	z_shell_op_cursor_vert_move(shell, shell->ctx->vt100_ctx.cons.cur_y - 1);
@@ -415,7 +425,7 @@ static void vt100_bgcolor_set(const struct shell *shell,
 }
 
 void z_shell_vt100_color_set(const struct shell *shell,
-			     enum shell_vt100_color color)
+			   enum shell_vt100_color color)
 {
 
 	if (shell->ctx->vt100_ctx.col.col == color) {

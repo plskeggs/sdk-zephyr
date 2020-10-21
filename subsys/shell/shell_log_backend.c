@@ -101,12 +101,12 @@ static void msg_to_fifo(const struct shell *shell,
 	{
 		flush_expired_messages(shell);
 
-		err = k_msgq_put(shell->log_backend->msgq, &msg, K_NO_WAIT);
+		err = k_msgq_put(shell->log_backend->msgq, &t_msg, K_NO_WAIT);
 		if (err) {
 			/* Unexpected case as we just freed one element and
 			 * there is no other context that puts into the msgq.
 			 */
-			__ASSERT_NO_MSG(0);
+			printk("ERROR %d: NO MESSAGE\n", err);
 		}
 		break;
 	}

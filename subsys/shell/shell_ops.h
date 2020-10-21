@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 static inline void z_shell_raw_fprintf(const struct shell_fprintf *const ctx,
-				       const char *fmt, ...)
+				     const char *fmt, ...)
 {
 	va_list args;
 
@@ -88,6 +88,16 @@ static inline bool z_flag_echo_get(const struct shell *shell)
 static inline void z_flag_echo_set(const struct shell *shell, bool val)
 {
 	shell->ctx->internal.flags.echo = val ? 1 : 0;
+}
+
+static inline bool flag_obscure_get(const struct shell *shell)
+{
+	return shell->ctx->internal.flags.obscure == 1;
+}
+
+static inline void flag_obscure_set(const struct shell *shell, bool val)
+{
+	shell->ctx->internal.flags.obscure = val ? 1 : 0;
 }
 
 static inline bool z_flag_processing_get(const struct shell *shell)
@@ -201,8 +211,8 @@ void z_shell_op_char_delete(const struct shell *shell);
 void z_shell_op_delete_from_cursor(const struct shell *shell);
 
 void z_shell_op_completion_insert(const struct shell *shell,
-				  const char *compl,
-				  uint16_t compl_len);
+				const char *compl,
+				uint16_t compl_len);
 
 bool z_shell_cursor_in_empty_line(const struct shell *shell);
 
@@ -244,22 +254,22 @@ void z_shell_print_stream(const void *user_ctx, const char *data, size_t len);
 
 /** @internal @brief Function for setting font color */
 void z_shell_vt100_color_set(const struct shell *shell,
-			     enum shell_vt100_color color);
+			   enum shell_vt100_color color);
 
 static inline void z_shell_vt100_colors_store(const struct shell *shell,
-					      struct shell_vt100_colors *color)
+					    struct shell_vt100_colors *color)
 {
 	memcpy(color, &shell->ctx->vt100_ctx.col, sizeof(*color));
 }
 
 void z_shell_vt100_colors_restore(const struct shell *shell,
-				  const struct shell_vt100_colors *color);
+				const struct shell_vt100_colors *color);
 
 /* This function can be called only within shell thread but not from command
  * handlers.
  */
 void z_shell_fprintf(const struct shell *shell, enum shell_vt100_color color,
-		     const char *fmt, ...);
+			    const char *fmt, ...);
 
 void z_shell_vfprintf(const struct shell *shell, enum shell_vt100_color color,
 		      const char *fmt, va_list args);
