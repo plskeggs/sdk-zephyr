@@ -139,6 +139,10 @@ class GdbStub(abc.ABC):
         barray = b''
         r = get_mem_region(addr)
         while remaining > 0:
+            if r is None:
+                barray = None
+                break
+
             if addr > r['end']:
                 r = get_mem_region(addr)
 
