@@ -27,6 +27,11 @@ static struct z_coredump_backend_api
 
 static int error;
 
+#if defined(CONFIG_DEBUG_COREDUMP_BACKEND_LOGGING)
+#include <logging/log.h>
+LOG_MODULE_REGISTER(coredump, CONFIG_KERNEL_LOG_LEVEL);
+#endif
+
 static int dump_header(unsigned int reason)
 {
 	struct z_coredump_hdr_t hdr = {

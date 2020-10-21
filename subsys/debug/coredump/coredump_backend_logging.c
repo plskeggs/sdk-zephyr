@@ -11,6 +11,7 @@
 #include "coredump_internal.h"
 
 #include <logging/log.h>
+#include <logging/log_ctrl.h>
 LOG_MODULE_DECLARE(coredump, CONFIG_KERNEL_LOG_LEVEL);
 
 #define COREDUMP_BEGIN_STR	"BEGIN#"
@@ -34,6 +35,7 @@ char log_buf[LOG_BUF_SZ_RAW];
 
 static void coredump_logging_backend_start(void)
 {
+	LOG_PANIC();
 	LOG_ERR(COREDUMP_PREFIX_STR COREDUMP_BEGIN_STR);
 }
 
@@ -47,7 +49,7 @@ static void coredump_logging_backend_error(void)
 	LOG_ERR(COREDUMP_PREFIX_STR COREDUMP_ERROR_STR);
 }
 
-static int coredump_logging_backend_buffer_output(uint8_t *buf, size_t buflen)
+static int out(uint8_t *buf, size_t buflen)
 {
 	uint8_t log_ptr = 0;
 	size_t remaining = buflen;
@@ -77,7 +79,7 @@ static int coredump_logging_backend_buffer_output(uint8_t *buf, size_t buflen)
 
 		if ((log_ptr >= LOG_BUF_SZ) || (remaining == 0)) {
 			log_buf[log_ptr] = '\0';
-			LOG_ERR(COREDUMP_PREFIX_STR "%s", log_buf);
+			LOG_ERR(COREDUMP_PREFIX_STR "%s", log_strdup(log_buf));
 			log_ptr = 0;
 		}
 	}
@@ -89,5 +91,5 @@ struct z_coredump_backend_api z_coredump_backend_logging = {
 	.start = coredump_logging_backend_start,
 	.end = coredump_logging_backend_end,
 	.error = coredump_logging_backend_error,
-	.buffer_output = coredump_logging_backend_buffer_output,
+	.buffer_output = out,
 };
