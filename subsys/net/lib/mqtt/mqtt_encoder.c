@@ -288,7 +288,7 @@ int connect_request_encode(const struct mqtt_client *client,
 	start = buf->cur;
 
 	MQTT_TRC("Encoding Protocol Description. Str:%s Size:%08x.",
-		 mqtt_proto_desc->utf8, mqtt_proto_desc->size);
+		 log_strdup(mqtt_proto_desc->utf8), mqtt_proto_desc->size);
 
 	err_code = pack_utf8_str(mqtt_proto_desc, buf);
 	if (err_code != 0) {
@@ -318,7 +318,7 @@ int connect_request_encode(const struct mqtt_client *client,
 	}
 
 	MQTT_TRC("Encoding Client Id. Str:%s Size:%08x.",
-		 client->client_id.utf8, client->client_id.size);
+		 log_strdup(client->client_id.utf8), client->client_id.size);
 	err_code = pack_utf8_str(&client->client_id, buf);
 	if (err_code != 0) {
 		return err_code;
@@ -332,7 +332,7 @@ int connect_request_encode(const struct mqtt_client *client,
 		connect_flags |= client->will_retain << 5;
 
 		MQTT_TRC("Encoding Will Topic. Str:%s Size:%08x.",
-			 client->will_topic->topic.utf8,
+			 log_strdup(client->will_topic->topic.utf8),
 			 client->will_topic->topic.size);
 		err_code = pack_utf8_str(&client->will_topic->topic, buf);
 		if (err_code != 0) {
@@ -341,7 +341,7 @@ int connect_request_encode(const struct mqtt_client *client,
 
 		if (client->will_message != NULL) {
 			MQTT_TRC("Encoding Will Message. Str:%s Size:%08x.",
-				 client->will_message->utf8,
+				 log_strdup(client->will_message->utf8),
 				 client->will_message->size);
 			err_code = pack_utf8_str(client->will_message, buf);
 			if (err_code != 0) {
@@ -361,7 +361,8 @@ int connect_request_encode(const struct mqtt_client *client,
 		connect_flags |= MQTT_CONNECT_FLAG_USERNAME;
 
 		MQTT_TRC("Encoding Username. Str:%s, Size:%08x.",
-			 client->user_name->utf8, client->user_name->size);
+			 log_strdup(client->user_name->utf8),
+			 client->user_name->size);
 		err_code = pack_utf8_str(client->user_name, buf);
 		if (err_code != 0) {
 			return err_code;
@@ -373,7 +374,8 @@ int connect_request_encode(const struct mqtt_client *client,
 		connect_flags |= MQTT_CONNECT_FLAG_PASSWORD;
 
 		MQTT_TRC("Encoding Password. Str:%s Size:%08x.",
-			 client->password->utf8, client->password->size);
+			 log_strdup(client->password->utf8),
+			 client->password->size);
 		err_code = pack_utf8_str(client->password, buf);
 		if (err_code != 0) {
 			return err_code;
