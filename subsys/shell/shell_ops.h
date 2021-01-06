@@ -86,22 +86,22 @@ static inline void flag_use_colors_set(const struct shell *shell, bool val)
 	shell->ctx->internal.flags.use_colors = val ? 1 : 0;
 }
 
-static inline bool flag_echo_get(const struct shell *shell)
+inline bool flag_echo_get(const struct shell *shell)
 {
 	return shell->ctx->internal.flags.echo == 1;
 }
 
-static inline void flag_echo_set(const struct shell *shell, bool val)
+inline void flag_echo_set(const struct shell *shell, bool val)
 {
 	shell->ctx->internal.flags.echo = val ? 1 : 0;
 }
 
-static inline bool flag_obscure_get(const struct shell *shell)
+inline bool flag_obscure_get(const struct shell *shell)
 {
 	return shell->ctx->internal.flags.obscure == 1;
 }
 
-static inline void flag_obscure_set(const struct shell *shell, bool val)
+inline void flag_obscure_set(const struct shell *shell, bool val)
 {
 	shell->ctx->internal.flags.obscure = val ? 1 : 0;
 }
