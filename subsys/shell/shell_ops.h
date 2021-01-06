@@ -90,12 +90,12 @@ static inline void z_flag_echo_set(const struct shell *shell, bool val)
 	shell->ctx->internal.flags.echo = val ? 1 : 0;
 }
 
-static inline bool flag_obscure_get(const struct shell *shell)
+inline bool flag_obscure_get(const struct shell *shell)
 {
 	return shell->ctx->internal.flags.obscure == 1;
 }
 
-static inline void flag_obscure_set(const struct shell *shell, bool val)
+inline void flag_obscure_set(const struct shell *shell, bool val)
 {
 	shell->ctx->internal.flags.obscure = val ? 1 : 0;
 }

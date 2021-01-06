@@ -1163,7 +1163,7 @@ static int instance_init(const struct shell *shell, const void *p_config,
 
 	z_flag_tx_rdy_set(shell, true);
 	z_flag_echo_set(shell, IS_ENABLED(CONFIG_SHELL_ECHO_STATUS));
-	flag_obscure_set(shell, true);
+	flag_obscure_set(shell, IS_ENABLED(CONFIG_SHELL_START_OBSCURED));
 	z_flag_mode_delete_set(shell,
 			     IS_ENABLED(CONFIG_SHELL_BACKSPACE_MODE_DELETE));
 	shell->ctx->vt100_ctx.cons.terminal_wid =
