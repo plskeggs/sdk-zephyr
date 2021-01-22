@@ -355,6 +355,25 @@ void heap_print_stats(struct z_heap *h)
 #endif
 }
 
+void heap_stats(void)
+{
+	//extern struct k_heap kheap_poolheap__heap_mem_pool;
+	//struct k_heap *k_heap = &kheap_poolheap__heap_mem_pool;
+	extern struct k_heap poolheap__heap_mem_pool;
+	struct k_heap *k_heap = &poolheap__heap_mem_pool;
+	struct sys_heap *s_heap = &k_heap->heap;
+	struct z_heap *z_heap = s_heap->heap;
+
+	printk("Heap stats for %p | Free: %u (min %u) "
+	       "| Contiguous: %u (min %u) | Total: %u\n",
+	       z_heap,
+	       z_heap->avail_chunks * CHUNK_UNIT,
+	       z_heap->avail_chunks_min * CHUNK_UNIT,
+	       z_heap->avail_contig * CHUNK_UNIT,
+	       z_heap->avail_contig_min * CHUNK_UNIT,
+	       z_heap->len * CHUNK_UNIT);
+}
+
 void sys_heap_print_stats(struct sys_heap *heap)
 {
 	heap_print_stats(heap->heap);
