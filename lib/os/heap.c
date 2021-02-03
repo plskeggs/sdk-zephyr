@@ -357,8 +357,6 @@ void heap_print_stats(struct z_heap *h)
 
 void heap_stats(void)
 {
-	//extern struct k_heap kheap_poolheap__heap_mem_pool;
-	//struct k_heap *k_heap = &kheap_poolheap__heap_mem_pool;
 	extern struct k_heap poolheap__heap_mem_pool;
 	struct k_heap *k_heap = &poolheap__heap_mem_pool;
 	struct sys_heap *s_heap = &k_heap->heap;
