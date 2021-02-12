@@ -226,7 +226,7 @@ static void reprint_from_cursor(const struct shell *shell, uint16_t diff,
 	if (flag_obscure_get(shell)) {
 		int len = strlen(&shell->ctx->cmd_buff[shell->ctx->cmd_buff_pos]);
 		while (len--) {
-			shell_raw_fprintf(shell->fprintf_ctx, "*");
+			z_shell_raw_fprintf(shell->fprintf_ctx, "*");
 		}
 	} else {
 		z_shell_fprintf(shell, SHELL_NORMAL, "%s",

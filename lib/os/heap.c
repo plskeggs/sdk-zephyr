@@ -357,8 +357,8 @@ void heap_print_stats(struct z_heap *h)
 
 uint32_t heap_stats(bool print)
 {
-	extern struct k_heap poolheap__heap_mem_pool;
-	struct k_heap *k_heap = &poolheap__heap_mem_pool;
+	extern struct k_heap _system_heap;
+	struct k_heap *k_heap = &_system_heap;
 	struct sys_heap *s_heap = &k_heap->heap;
 	struct z_heap *z_heap = s_heap->heap;
 
