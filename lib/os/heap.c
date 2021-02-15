@@ -362,8 +362,13 @@ uint32_t heap_stats(bool print)
 	struct sys_heap *s_heap = &k_heap->heap;
 	struct z_heap *z_heap = s_heap->heap;
 
+	extern struct k_heap library_heap;
+	struct k_heap *lk_heap = &library_heap;
+	struct sys_heap *ls_heap = &lk_heap->heap;
+	struct z_heap *lz_heap = ls_heap->heap;
+
 	if (print) {
-		printk("Heap stats for %p | Free: %u (min %u) "
+		printk("Heap stats for _system_heap: %p | Free: %u (min %u) "
 		       "| Contiguous: %u (min %u) | Total: %u\n",
 		       z_heap,
 		       z_heap->avail_chunks * CHUNK_UNIT,
@@ -371,6 +376,14 @@ uint32_t heap_stats(bool print)
 		       z_heap->avail_contig * CHUNK_UNIT,
 		       z_heap->avail_contig_min * CHUNK_UNIT,
 		       z_heap->len * CHUNK_UNIT);
+		printk("Heap stats for library_heap: %p | Free: %u (min %u) "
+		       "| Contiguous: %u (min %u) | Total: %u\n",
+		       lz_heap,
+		       lz_heap->avail_chunks * CHUNK_UNIT,
+		       lz_heap->avail_chunks_min * CHUNK_UNIT,
+		       lz_heap->avail_contig * CHUNK_UNIT,
+		       lz_heap->avail_contig_min * CHUNK_UNIT,
+		       lz_heap->len * CHUNK_UNIT);
 	}
 	return z_heap->avail_chunks * CHUNK_UNIT;
 }
