@@ -21,6 +21,8 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://github.com/zephyrproject-rtos
+    - name: origin
+      url-base: https://github.com/plskeggs
 
   #
   # Please add items below based on alphabetical order
@@ -168,7 +170,11 @@ manifest:
       revision: 8e303c264fc21c2116dc612658003a22e933124d
       path: modules/lib/lz4
     - name: mbedtls
-      revision: 3e3e58a92de76069730c63e0d524f40fea948a61
+      #revision: 3e3e58a92de76069730c63e0d524f40fea948a61
+      #revision: 5765cb7f75a9973ae9232d438e361a9d7bbc49e7
+      revision: feature-dtls-cid
+      remote: origin
+      repo-path: mbedtls-1
       path: modules/crypto/mbedtls
       groups:
         - crypto
