@@ -1077,7 +1077,7 @@ static int tls_mbedtls_init(struct tls_context *context, bool is_server)
 	}
 #endif /* CONFIG_NET_SOCKETS_ENABLE_DTLS */
 
-#if defined(MBEDTLS_X509_CRT_PARSE_C)
+#if defined(MBEDTLS_X509_CRT_PARSE_C) || defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
 	/* For TLS clients, set hostname to empty string to enforce it's
 	 * verification - only if hostname option was not set. Otherwise
 	 * depend on user configuration.
@@ -1210,7 +1210,7 @@ static int tls_opt_hostname_set(struct tls_context *context,
 {
 	ARG_UNUSED(optlen);
 
-#if defined(MBEDTLS_X509_CRT_PARSE_C)
+#if defined(MBEDTLS_X509_CRT_PARSE_C) || defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
 	if (mbedtls_ssl_set_hostname(&context->ssl, optval) != 0) {
 		return -EINVAL;
 	}
