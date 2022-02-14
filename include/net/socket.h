@@ -180,6 +180,12 @@ struct zsock_addrinfo {
 	char _ai_canonname[DNS_MAX_NAME_SIZE + 1];
 };
 
+struct tls_dtls_peer_cid {
+	int enabled;
+	unsigned char peer_cid[32];
+	size_t peer_cid_len;
+};
+
 /**
  * @brief Obtain a file descriptor's associated net context
  *
