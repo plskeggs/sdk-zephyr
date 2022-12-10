@@ -86,6 +86,10 @@ def formalize_fmt_string(fmt_str):
     # No %p for pointer either, so use %x
     new_str = new_str.replace("%p", "0x%x")
 
+    # No %z for size_t, so use %l
+    new_str = new_str.replace("%zd", "%ld")
+    new_str = new_str.replace("%zu", "%lu")
+
     return new_str
 
 
