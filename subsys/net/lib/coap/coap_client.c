@@ -194,12 +194,17 @@ static int coap_client_init_request(struct coap_client *client,
 {
 	int ret = 0;
 	int i;
+	uint8_t *tok = coap_next_token();
+	uint16_t mid = coap_next_id();
 
 	memset(client->send_buf, 0, sizeof(client->send_buf));
 	ret = coap_packet_init(&client->request, client->send_buf, MAX_COAP_MSG_LEN, 1,
 			       req->confirmable ? COAP_TYPE_CON : COAP_TYPE_NON_CON,
-			       COAP_TOKEN_MAX_LEN, coap_next_token(), req->method,
-			       coap_next_id());
+			       COAP_TOKEN_MAX_LEN, tok, req->method,
+			       mid);
+	LOG_DBG("Sending %u.%02u %s, tok:0x%x%x%x%x%x%x%x%x mid:%u",
+		req->method / 32, req->method & 0x1f, req->confirmable ? "CON" : "NON",
+		tok[0], tok[1], tok[2], tok[3], tok[4], tok[5], tok[6], tok[7], mid);
 
 	if (ret < 0) {
 		LOG_ERR("Failed to init CoAP message %d", ret);
@@ -547,6 +552,8 @@ static int handle_response(struct coap_client *client, const struct coap_packet 
 	 */
 	response_type = coap_header_get_type(response);
 
+	LOG_DBG("Received mid:%u, expecting:%u",
+		coap_header_get_id(response), client->pending.id);
 	/* Reset and Ack need to match the message ID with request */
 	if ((response_type == COAP_TYPE_ACK || response_type == COAP_TYPE_RESET) &&
 	     coap_header_get_id(response) != client->pending.id)  {
@@ -554,6 +561,9 @@ static int handle_response(struct coap_client *client, const struct coap_packet 
 		return -EFAULT;
 	} else if (response_type == COAP_TYPE_RESET) {
 		coap_pending_clear(&client->pending);
+		LOG_DBG("Got RESET");
+	} else {
+		LOG_DBG("Got ACK");
 	}
 
 	/* CON, NON_CON and piggybacked ACK need to match the token with original request */
@@ -564,6 +574,7 @@ static int handle_response(struct coap_client *client, const struct coap_packet 
 	/* Separate response */
 	if (payload_len == 0 && response_type == COAP_TYPE_ACK &&
 	    response_code == COAP_CODE_EMPTY) {
+		LOG_DBG("Got ACK with COAP_CODE_EMPTY");
 		/* Clear the pending, poll uses now the separate timeout for the response. */
 		coap_pending_clear(&client->pending);
 		return 1;
@@ -574,6 +585,8 @@ static int handle_response(struct coap_client *client, const struct coap_packet 
 		LOG_ERR("Not matching tokens, respond with reset");
 		ret = send_reset(client, response, COAP_RESPONSE_CODE_NOT_FOUND);
 		return 1;
+	} else {
+		LOG_DBG("Tokens match");
 	}
 
 	/* Send ack for CON */
@@ -592,6 +605,7 @@ static int handle_response(struct coap_client *client, const struct coap_packet 
 	/* Check if block2 exists */
 	block_option = coap_get_option_int(response, COAP_OPTION_BLOCK2);
 	if (block_option > 0) {
+		LOG_DBG("Got block2");
 		blockwise_transfer = true;
 		last_block = !GET_MORE(block_option);
 		block_num = GET_BLOCK_NUM(block_option);
@@ -636,6 +650,7 @@ static int handle_response(struct coap_client *client, const struct coap_packet 
 
 	/* If this wasn't last block, send the next request */
 	if (blockwise_transfer && !last_block) {
+		LOG_DBG("Not last block; get next");
 		ret = coap_client_init_request(client, client->coap_request);
 
 		if (ret < 0) {
@@ -675,7 +690,9 @@ void coap_client_recv(void *coap_cl, void *a, void *b)
 	struct coap_client *const client = coap_cl;
 
 	reset_block_contexts(client);
+	LOG_DBG("taking sem");
 	k_sem_take(&client->coap_client_recv_sem, K_FOREVER);
+	LOG_DBG("got sem");
 	while (true) {
 		struct coap_packet response;
 
@@ -689,6 +706,7 @@ void coap_client_recv(void *coap_cl, void *a, void *b)
 			goto idle;
 		}
 
+		LOG_DBG("calling recv_response");
 		ret = recv_response(client, &response);
 		if (ret < 0) {
 			LOG_ERR("Error receiving response");
@@ -696,6 +714,7 @@ void coap_client_recv(void *coap_cl, void *a, void *b)
 			goto idle;
 		}
 
+		LOG_DBG("calling handle_response");
 		ret = handle_response(client, &response);
 		if (ret < 0) {
 			LOG_ERR("Error handling respnse");
@@ -710,7 +729,9 @@ void coap_client_recv(void *coap_cl, void *a, void *b)
 idle:
 			reset_block_contexts(client);
 			atomic_set(&client->coap_client_recv_active, 0);
+			LOG_DBG("taking sem.");
 			k_sem_take(&client->coap_client_recv_sem, K_FOREVER);
+			LOG_DBG("got sem.");
 		}
 	}
 }
