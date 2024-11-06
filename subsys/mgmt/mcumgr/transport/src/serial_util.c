@@ -182,6 +182,9 @@ int mcumgr_serial_tx_pkt(const uint8_t *data, int len, mcumgr_serial_tx_cb cb)
 	int to_process;
 	int reminder;
 
+	if (data == NULL) {
+		return -EINVAL;
+	}
 	/*
 	 * This is max input bytes that can be taken to the frame before encoding with Base64;
 	 * Base64 has three-to-four ratio, which means that for each three input bytes there are

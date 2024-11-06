@@ -400,6 +400,10 @@ int smp_process_request_packet(struct smp_streamer *streamer, void *vreq)
 		handler_found = false;
 		valid_hdr = false;
 
+		if (req->data == NULL) {
+			rc = MGMT_ERR_EINVAL;
+			break;
+		}
 		/* Read the management header and strip it from the request. */
 		rc = smp_read_hdr(req, &req_hdr);
 		if (rc != 0) {

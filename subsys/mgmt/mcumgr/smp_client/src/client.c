@@ -54,12 +54,16 @@ static void smp_client_handle_reqs(struct k_work *work)
 	struct smp_client_object *smp_client;
 	struct smp_transport *smpt;
 	struct net_buf *nb;
+	int ret;
 
 	smp_client = (void *)work;
 	smpt = smp_client->smpt;
 
 	while ((nb = k_fifo_get(&smp_client->tx_fifo, K_NO_WAIT)) != NULL) {
-		smpt->functions.output(nb);
+		ret = smpt->functions.output(nb);
+		if (ret < 0) {
+			break;
+		}
 	}
 }
 
@@ -190,6 +194,9 @@ static struct smp_client_cmd_req *smp_client_response_discover(const struct smp_
 	}
 
 	SYS_SLIST_FOR_EACH_CONTAINER(&smp_client_data.cmd_list, cmd_req, node) {
+		if (cmd_req->nb->data == NULL) {
+			return NULL;
+		}
 		smp_read_hdr(cmd_req->nb, &smp_header);
 		if (smp_header.nh_op == MGMT_OP_READ) {
 			response = MGMT_OP_READ_RSP;
@@ -291,6 +298,9 @@ int smp_client_send_cmd(struct smp_client_object *smp_client, struct net_buf *nb
 
 	if (timeout_in_sec == 0) {
 		timeout_in_sec = CONFIG_SMP_CMD_DEFAULT_LIFE_TIME;
+	}
+	if (nb->data == NULL) {
+		return MGMT_ERR_EINVAL;
 	}
 
 	smp_read_hdr(nb, &smp_header);
