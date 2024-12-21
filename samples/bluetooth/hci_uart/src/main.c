@@ -30,7 +30,7 @@
 #include <zephyr/bluetooth/hci_raw.h>
 
 #define LOG_MODULE_NAME hci_uart
-LOG_MODULE_REGISTER(LOG_MODULE_NAME);
+LOG_MODULE_REGISTER(LOG_MODULE_NAME, 4);
 
 static const struct device *const hci_uart_dev =
 	DEVICE_DT_GET(DT_CHOSEN(zephyr_bt_c2h_uart));
@@ -217,6 +217,7 @@ static void tx_isr(void)
 			uart_irq_tx_disable(hci_uart_dev);
 			return;
 		}
+		LOG_HEXDUMP_DBG(buf->data, buf->len, "buf");
 	}
 
 	len = uart_fifo_fill(hci_uart_dev, buf->data, buf->len);
@@ -255,6 +256,7 @@ static void tx_thread(void *p1, void *p2, void *p3)
 		/* Wait until a buffer is available */
 		buf = k_fifo_get(&tx_queue, K_FOREVER);
 		/* Pass buffer to the stack */
+		LOG_HEXDUMP_DBG(buf->data, buf->len, "buf");
 		err = bt_send(buf);
 		if (err) {
 			LOG_ERR("Unable to send (err %d)", err);
@@ -328,7 +330,7 @@ void bt_ctlr_assert_handle(char *file, uint32_t line)
 
 static int hci_uart_init(void)
 {
-	LOG_DBG("");
+	LOG_DBG("Initializing...");
 
 	if (IS_ENABLED(CONFIG_USB_CDC_ACM)) {
 		if (usb_enable(NULL)) {
@@ -365,7 +367,7 @@ int main(void)
 
 	/* Enable the raw interface, this will in turn open the HCI driver */
 	bt_enable_raw(&rx_queue);
-
+	LOG_DBG("bt_raw enabled");
 	if (IS_ENABLED(CONFIG_BT_WAIT_NOP)) {
 		/* Issue a Command Complete with NOP */
 		int i;
@@ -386,12 +388,15 @@ int main(void)
 			},
 		};
 
+		LOG_DBG("Sending BT NOP");
+		LOG_HEXDUMP_DBG((const uint8_t *)&cc_evt, sizeof(cc_evt), "buf");
 		for (i = 0; i < sizeof(cc_evt); i++) {
 			uart_poll_out(hci_uart_dev,
 				      *(((const uint8_t *)&cc_evt)+i));
 		}
 	}
 
+	LOG_DBG("Starting TX thread");
 	/* Spawn the TX thread and start feeding commands and data to the
 	 * controller
 	 */
@@ -400,13 +405,17 @@ int main(void)
 			NULL, NULL, NULL, K_PRIO_COOP(7), 0, K_NO_WAIT);
 	k_thread_name_set(&tx_thread_data, "HCI uart TX");
 
+	LOG_DBG("Started");
 	while (1) {
 		struct net_buf *buf;
 
 		buf = k_fifo_get(&rx_queue, K_FOREVER);
+		LOG_DBG("Got buf");
 		err = h4_send(buf);
 		if (err) {
 			LOG_ERR("Failed to send");
+		} else {
+			LOG_DBG("Put buf");
 		}
 	}
 	return 0;

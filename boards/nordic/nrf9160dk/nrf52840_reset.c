@@ -24,14 +24,18 @@ int bt_hci_transport_setup(const struct device *h4)
 	char c;
 	const struct device *const port = DEVICE_DT_GET(RESET_GPIO_CTRL);
 
+	printk("In bt_hci_transport_setup\n");
 	if (!device_is_ready(port)) {
+		printk("Device is not ready\n");
 		return -EIO;
 	}
 
+	printk("Resetting 52840...\n");
 	/* Configure pin as output and initialize it to inactive state. */
 	err = gpio_pin_configure(port, RESET_GPIO_PIN,
 				 RESET_GPIO_FLAGS | GPIO_OUTPUT_INACTIVE);
 	if (err) {
+		printk("Error: %d\n", err);
 		return err;
 	}
 
@@ -41,6 +45,7 @@ int bt_hci_transport_setup(const struct device *h4)
 	 */
 	err = gpio_pin_set(port, RESET_GPIO_PIN, 1);
 	if (err) {
+		printk("Error: %d\n", err);
 		return err;
 	}
 
@@ -51,6 +56,7 @@ int bt_hci_transport_setup(const struct device *h4)
 	 */
 	k_sleep(K_MSEC(10));
 
+	printk("Drain bytes...\n");
 	/* Drain bytes */
 	while (h4 && uart_fifo_read(h4, &c, 1)) {
 		continue;
@@ -59,9 +65,16 @@ int bt_hci_transport_setup(const struct device *h4)
 	/* We are ready, let the nRF52840 run to main */
 	err = gpio_pin_set(port, RESET_GPIO_PIN, 0);
 	if (err) {
+		printk("Error: %d\n", err);
 		return err;
 	}
+	printk("Done -- 52840 is running\n");
+	return 0;
+}
 
+int bt_h4_vnd_setup(const struct device *dev)
+{
+	printk("In bt_h4_vnd_setup()\n");
 	return 0;
 }
 
